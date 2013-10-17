@@ -83,14 +83,24 @@ class TwonetPartner extends Twonet {
         return null;
     }
 
+	function track_details($guid, $track_guid) {
+		// TODO: determine if there is an API method to get the details for a single track
+//		$track_details_response = $this->twonet_get("/partner/user/track/details/${guid}/${track_guid}");
+//		return $track_details_response["trackDetailsResponse"];
+
+		// TODO: use xpath to parse the response
+		$tracks_details_response = $this->twonet_get("/partner/user/tracks/details/${guid}", $guid);
+		return $tracks_details_response["trackDetailsResponse"]["trackDetails"];
+	}
+
     function register_andbpm($guid, $serial_number) {
         $register_request = $this->twonet_register_with_serial_number($guid, $serial_number);
         $track_guids_response = $this->twonet_post("/partner/register/andbpm", $register_request);
         return $track_guids_response;
     }
 
-    function unregister_andbpm($guid) {
-        $status_response = $this->twonet_delete("/partner/device/remove/andbpm/${guid}");
+    function unregister_device($guid, $track_guid) {
+        $status_response = $this->twonet_delete("/partner/user/track/unregister/${guid}/${track_guid}");
         return $status_response['statusResponse']['status'];
     }
 
@@ -100,20 +110,10 @@ class TwonetPartner extends Twonet {
         return $track_guids_response;
     }
 
-    function unregister_andws($guid) {
-        $status_response = $this->twonet_delete("/partner/device/remove/andws/${guid}");
-        return $status_response['statusResponse']['status'];
-    }
-
     function register_asthmapolis($guid, $serial_number) {
         $register_request = $this->twonet_register_with_serial_number($guid, $serial_number);
         $track_guids_response = $this->twonet_post("/partner/register/asthmapolis", $register_request);
         return $track_guids_response;
-    }
-
-    function unregister_asthmapolis($guid) {
-        $status_response = $this->twonet_delete("/partner/device/remove/asthmapolis/${guid}");
-        return $status_response['statusResponse']['status'];
     }
 
     function register_entra($guid, $serial_number) {
@@ -122,20 +122,10 @@ class TwonetPartner extends Twonet {
         return $track_guids_response;
     }
 
-    function unregister_entra($guid) {
-        $status_response = $this->twonet_delete("/partner/device/remove/entra/${guid}");
-        return $status_response['statusResponse']['status'];
-    }
-
     function register_nonin($guid, $serial_number) {
         $register_request = $this->twonet_register_with_serial_number($guid, $serial_number);
         $track_guids_response = $this->twonet_post("/partner/register/nonin", $register_request);
         return $track_guids_response;
-    }
-
-    function unregister_nonin($guid) {
-        $status_response = $this->twonet_delete("/partner/device/remove/nonin/${guid}");
-        return $status_response['statusResponse']['status'];
     }
 
     function register_noom($guid, $email, $access_code) {
@@ -145,21 +135,11 @@ class TwonetPartner extends Twonet {
         return $track_guids_response;
     }
 
-    function unregister_noom($guid) {
-        $status_response = $this->twonet_delete("/partner/device/remove/noom/${guid}");
-        return $status_response['statusResponse']['status'];
-    }
-
     function register_withings($guid, $email, $password, $nickname) {
         $register_request = array('registerRequest' => array('guid' => $guid,
             'credentials' => array('identity' => $email, 'password' => $password, 'qualifier' => $nickname)));
         $track_guids_response = $this->twonet_post("/partner/register/withings", $register_request);
         return $track_guids_response;
-    }
-
-    function unregister_withings($guid) {
-        $status_response = $this->twonet_delete("/partner/device/remove/withings/${guid}");
-        return $status_response['statusResponse']['status'];
     }
 
     function authorize_bodymedia($guid) {
@@ -205,6 +185,7 @@ class TwonetPartner extends Twonet {
     function blood_latest($guid, $track_guid) {
         $measure_request = $this->twonet_measure_request($guid, $track_guid);
         $measure_response = $this->twonet_post("/partner/measure/blood/latest", $measure_request);
+//		var_dump($measure_response);
         return $measure_response['measureResponse']['measures']['measure'];
     }
 

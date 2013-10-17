@@ -1,24 +1,36 @@
 <?php
+ini_set('display_errors', 'On');
+error_reporting(E_ALL | E_STRICT);
+
 require('session.php');
 require('sample.php');
 
+$tracks = $twonet->user_tracks($_SESSION['guid']);
 if (isset($_POST['track']) && isset($_POST['action'])) {
-    if ($_POST['track'] == 'entra' && $_POST['action'] == 'add') {
+	if ($_POST['action'] == 'remove') {
+        $status = $twonet->unregister_device($_SESSION['guid'], $twonet->get_track_guid($_POST['track'], $tracks));
+	}
+
+    if ($_POST['track'] == TwonetPartner::TRACK_ENTRA && $_POST['action'] == 'add') {
         $twonet->register_entra($_SESSION['guid'], $_POST['serial_number']);
     }
-    if ($_POST['track'] == 'entra' && $_POST['action'] == 'remove') {
-        $twonet->unregister_entra($_SESSION['guid']);
+
+    if ($_POST['track'] == TwonetPartner::TRACK_ANDBPM && $_POST['action'] == 'add') {
+        $twonet->register_andbpm($_SESSION['guid'], $_POST['serial_number']);
+    }
+
+    if ($_POST['track'] == TwonetPartner::TRACK_ANDWS && $_POST['action'] == 'add') {
+        $twonet->register_andws($_SESSION['guid'], $_POST['serial_number']);
     }
 
     if ($_POST['track'] == 'fitbit' && $_POST['action'] == 'add') {
         $response = $twonet->authorize_fitbit($_SESSION['guid']);
         $oauth_url = $response['oauthAuthorizationUrl'];
     }
-    if ($_POST['track'] == 'fitbit' && $_POST['action'] == 'remove') {
-        $twonet->deauthorize_fitbit($_SESSION['guid']);
-    }
+
+	// Get the tracks again because some may have been added or removed
+	$tracks = $twonet->user_tracks($_SESSION['guid']);
 }
-$tracks = $twonet->user_tracks($_SESSION['guid']);
 ?>
 <!DOCTYPE HTML>
 <html lang="en" dir="ltr">
@@ -49,8 +61,9 @@ $tracks = $twonet->user_tracks($_SESSION['guid']);
             <div class="device">
                 <span class="device-delete">
                     <form class="device-form" method="post" action="devices.php">
-                        <input type="hidden" name="track" value="entra">
+                        <input type="hidden" name="track" value="<?=TwonetPartner::TRACK_ENTRA ?>">
                         <?php if ($twonet->user_has(TwonetPartner::TRACK_ENTRA, $tracks)) { ?>
+<!--						<span>--><?// var_dump($twonet->track_details($_SESSION['guid'], $twonet->get_track_guid(TwonetPartner::TRACK_ENTRA, $tracks))) ?><!--</span>-->
                         <input type="hidden" name="action" value="remove">
                         <input type="submit" value="Remove">
                         <?php } else { ?>
@@ -64,6 +77,54 @@ $tracks = $twonet->user_tracks($_SESSION['guid']);
                 </span>
                 <h3>Entra Glucometer</h3>
             </div>
+            <!-- A&D BP Device -->
+            <div class="device">
+                <span class="device-delete">
+                    <form class="device-form" method="post" action="devices.php">
+                        <input type="hidden" name="track" value="<?=TwonetPartner::TRACK_ANDBPM ?>">
+                        <?php if ($twonet->user_has(TwonetPartner::TRACK_ANDBPM, $tracks)) { ?>
+<!--						<span>-->
+							<? $track_details = $twonet->track_details($_SESSION['guid'],
+								$twonet->get_track_guid(TwonetPartner::TRACK_ANDBPM, $tracks));
+//							var_dump($track_details) ?>
+						<!--</span>-->
+                        <input type="hidden" name="action" value="remove">
+                        <input type="submit" value="Remove">
+                        <?php } else { ?>
+                        <input type="hidden" name="action" value="add">
+                        <input name="serial_number" type="text" size="12" value="2NET00004">
+                        <input type="submit" value="Add">
+                        <label>
+                        </label>
+                        <?php } ?>
+                    </form>
+                </span>
+                <h3>A&D Blood Pressure Monitor</h3>
+            </div>
+            <!-- A&D BP Device -->
+            <div class="device">
+                <span class="device-delete">
+                    <form class="device-form" method="post" action="devices.php">
+                        <input type="hidden" name="track" value="<?=TwonetPartner::TRACK_ANDWS ?>">
+                        <?php if ($twonet->user_has(TwonetPartner::TRACK_ANDWS, $tracks)) { ?>
+<!--						<span>-->
+							<? $track_details = $twonet->track_details($_SESSION['guid'],
+								$twonet->get_track_guid(TwonetPartner::TRACK_ANDWS, $tracks));
+//							var_dump($track_details) ?>
+						<!--</span>-->
+                        <input type="hidden" name="action" value="remove">
+                        <input type="submit" value="Remove">
+                        <?php } else { ?>
+                        <input type="hidden" name="action" value="add">
+                        <input name="serial_number" type="text" size="12" value="2NET00003">
+                        <input type="submit" value="Add">
+                        <label>
+                        </label>
+                        <?php } ?>
+                    </form>
+                </span>
+                <h3>A&D Weight Scale</h3>
+            </div>
             <!-- Fitbit Device -->
             <div class="device">
                 <span class="device-delete">
@@ -71,7 +132,7 @@ $tracks = $twonet->user_tracks($_SESSION['guid']);
                     <a target="oauth" href="<?=$oauth_url?>">Click to authorize Fitbit</a>
                 <?php } else { ?>
                     <form class="device-form" method="post" action="devices.php">
-                        <input type="hidden" name="track" value="fitbit">
+                        <input type="hidden" name="track" value="<?=TwonetPartner::TRACK_FITBIT ?>">
                         <?php if ($twonet->user_has(TwonetPartner::TRACK_FITBIT, $tracks)) { ?>
                         <input type="hidden" name="action" value="remove">
                         <input type="submit" value="Remove">

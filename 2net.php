@@ -2,7 +2,7 @@
 
 class Twonet {
 
-    private $DEBUG = false;
+    private $DEBUG = true;
 
     private $endpoint;
     private $auth;

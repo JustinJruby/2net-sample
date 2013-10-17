@@ -1,4 +1,8 @@
 <?php
+
+ini_set('display_errors', 'On');
+error_reporting(E_ALL | E_STRICT);
+
 require('session.php');
 require('sample.php');
 
@@ -8,11 +12,21 @@ if ($twonet->user_has(TwonetPartner::TRACK_ENTRA, $tracks)) {
     $blood_measure = $twonet->blood_latest($_SESSION['guid'], $twonet->get_track_guid(TwonetPartner::TRACK_ENTRA, $tracks));
 }
 
+if ($twonet->user_has(TwonetPartner::TRACK_ANDBPM, $tracks)) {
+    $bp_measure = $twonet->blood_latest($_SESSION['guid'], $twonet->get_track_guid(TwonetPartner::TRACK_ANDBPM, $tracks));
+}
+
 if ($twonet->user_has(TwonetPartner::TRACK_FITBIT, $tracks)) {
     $body_measure = $twonet->body_latest($_SESSION['guid'], $twonet->get_track_guid(TwonetPartner::TRACK_FITBIT, $tracks));
 }
+if ($twonet->user_has(TwonetPartner::TRACK_ANDWS, $tracks)) {
+    $body_measure = $twonet->body_latest($_SESSION['guid'], $twonet->get_track_guid(TwonetPartner::TRACK_ANDWS, $tracks));
+}
 if (empty($blood_measure)) {
     $blood_measure = array("time" => "0", "blood" => array("glucose" => "0"));
+}
+if (empty($bp_measure)) {
+    $bp_measure = array("time" => "0", "blood" => array("systolic" => "0", "diastolic" => "0"));
 }
 if (empty($body_measure)) {
     $body_measure = array("time" => "0", "body" => array("weight" => "0", "bmi" => "0"));
@@ -47,6 +61,14 @@ if (empty($body_measure)) {
                 <p class="reading-time"><?=date("m/d/Y - g:ia", $blood_measure['time']);?></p>
                 <p class="blood-sugar-reading"><?=number_format($blood_measure['blood']['glucose']);?></p>
             </div>
+            <p class="device-name">A&D Blood Pressure Cuff</p>
+            <hr />
+            <div class="bood-sugar">
+                <img src="images/bloodsugar.png" class="device-icon" alt="Blood Sugar Level" />
+                <h3 style="font-size: 1.6em;">Blood Pressure Systolic/Diastolic (mmHg)</h3>
+                <p class="reading-time"><?=date("m/d/Y - g:ia", $bp_measure['time']);?></p>
+                <p class="blood-sugar-reading"><?=number_format($bp_measure['blood']['systolic']);?>/<?=number_format($bp_measure['blood']['diastolic']);?></p>
+            </div>
             <p class="device-name">FitBit Weight Scale</p>
             <hr />
             <div class="weight">
@@ -66,5 +88,11 @@ if (empty($body_measure)) {
         </article>
      </section>
 </div>
+<?php
+echo '<pre>';
+var_dump($twonet);
+var_dump($tracks);
+echo '</pre>';
+?>
 </body>
 </html>
